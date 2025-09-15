@@ -1,5 +1,5 @@
 CXX ?= g++
-CXXFLAGS ?= -Wall -Werror -Wextra -pedantic -std=c++23 -g
+CXXFLAGS ?= -Wall -Werror -Wextra -pedantic -std=c++26 -g
 
 SRC := $(wildcard *.cpp)
 OBJ := $(SRC:.cpp=.o)

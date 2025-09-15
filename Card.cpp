@@ -5,85 +5,90 @@
 
 #include "Card.h"
 
+#include <utility>
+
 using namespace std;
 
 
-constexpr char const* const Card::RANK_TWO;
-constexpr char const* const Card::RANK_THREE;
-constexpr char const* const Card::RANK_FOUR;
-constexpr char const* const Card::RANK_FIVE;
-constexpr char const* const Card::RANK_SIX;
-constexpr char const* const Card::RANK_SEVEN;
-constexpr char const* const Card::RANK_EIGHT;
-constexpr char const* const Card::RANK_NINE;
-constexpr char const* const Card::RANK_TEN;
-constexpr char const* const Card::RANK_JACK;
-constexpr char const* const Card::RANK_QUEEN;
-constexpr char const* const Card::RANK_KING;
-constexpr char const* const Card::RANK_ACE;
-
-constexpr char const* const Card::SUIT_SPADES;
-constexpr char const* const Card::SUIT_HEARTS;
-constexpr char const* const Card::SUIT_CLUBS;
-constexpr char const* const Card::SUIT_DIAMONDS;
-
 Card::Card()
-    : rank(RANK_TWO)
-    , suit(SUIT_SPADES) {}
+    : rank(Rank::ACE)
+    , suit(Suit::SPADES) {}
 
-Card::Card(string const& rank_in, string const& suit_in)
+Card::Card(Rank rank_in, Suit suit_in)
     : rank(rank_in)
     , suit(suit_in) {}
 
-string Card::get_rank() const {
+Card::Rank Card::get_rank() const {
     return rank;
 }
 
-string Card::get_suit() const {
+Card::Suit Card::get_suit() const {
     return suit;
 }
 
 bool Card::is_face() const {
-    return (rank == RANK_JACK || rank == RANK_QUEEN || rank == RANK_KING || rank == RANK_ACE);
+    return (rank == Rank::JACK || rank == Rank::QUEEN || rank == Rank::KING);
+}
+
+std::string Card::rank_to_string(Rank rank) {
+    switch (rank) {
+    case Rank::ACE:
+        return "A";
+    case Rank::TWO:
+        return "2";
+    case Rank::THREE:
+        return "3";
+    case Rank::FOUR:
+        return "4";
+    case Rank::FIVE:
+        return "5";
+    case Rank::SIX:
+        return "6";
+    case Rank::SEVEN:
+        return "7";
+    case Rank::EIGHT:
+        return "8";
+    case Rank::NINE:
+        return "9";
+    case Rank::TEN:
+        return "10";
+    case Rank::JACK:
+        return "J";
+    case Rank::QUEEN:
+        return "Q";
+    case Rank::KING:
+        return "K";
+    default:
+        std::unreachable();
+    }
+}
+
+std::string Card::suit_to_string(Suit suit) {
+    switch (suit) {
+    case Suit::SPADES:
+        return "♠";
+    case Suit::HEARTS:
+        return "♥";
+    case Suit::CLUBS:
+        return "♣";
+    case Suit::DIAMONDS:
+        return "♦";
+    default:
+        std::unreachable();
+    }
 }
 
 bool operator<(Card const& lhs, Card const& rhs) {
-    int rankIndex_lhs = -1;
-    int rankIndex_rhs = -1;
-    for (int rankIndex = 0; rankIndex < NUM_RANKS; rankIndex++) {
-        if (RANK_NAMES_BY_WEIGHT[rankIndex] == lhs.get_rank()) {
-            rankIndex_lhs = rankIndex;
-        }
-        if (RANK_NAMES_BY_WEIGHT[rankIndex] == rhs.get_rank()) {
-            rankIndex_rhs = rankIndex;
-        }
-    }
-
-    if (rankIndex_lhs < rankIndex_rhs) {
-        return true;
-    } else if (rankIndex_lhs > rankIndex_rhs) {
-        return false;
-    }
-
-    int suitIndex_lhs = -1;
-    int suitIndex_rhs = -1;
-    for (int suitIndex = 0; suitIndex < NUM_SUITS; suitIndex++) {
-        if (SUIT_NAMES_BY_WEIGHT[suitIndex] == lhs.get_suit()) {
-            suitIndex_lhs = suitIndex;
-        }
-        if (SUIT_NAMES_BY_WEIGHT[suitIndex] == rhs.get_suit()) {
-            suitIndex_rhs = suitIndex;
-        }
-    }
-    return (suitIndex_lhs < suitIndex_rhs);
+    return (static_cast<short>(lhs.get_rank()) < static_cast<short>(rhs.get_rank()));
 }
+
 
 bool operator>(Card const& lhs, Card const& rhs) {
     return ((lhs != rhs) && !(lhs < rhs));
 }
 
 bool operator==(Card const& lhs, Card const& rhs) {
-    return (lhs.get_rank() == rhs.get_rank() && lhs.get_suit() == rhs.get_suit());
+    return lhs.get_rank() == rhs.get_rank();
 }
 
 bool operator!=(Card const& lhs, Card const& rhs) {
@@ -98,7 +103,8 @@ bool operator<=(Card const& lhs, Card const& rhs) {
     return ((lhs == rhs) || (lhs < rhs));
 }
 
+
 ostream& operator<<(ostream& os, Card const& card) {
-    os << card.get_rank() << " of " << card.get_suit();
+    os << Card::rank_to_string(card.get_rank()) << Card::suit_to_string(card.get_suit());
     return os;
 }
