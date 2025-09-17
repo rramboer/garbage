@@ -7,9 +7,9 @@
 
 
 #include <array>
+#include <format>
 #include <iostream>
 #include <string>
-
 
 class Card {
 public:
@@ -24,46 +24,46 @@ public:
     enum class Suit : short { SPADES = 0, HEARTS, CLUBS, DIAMONDS };
 
     /**
-     * @brief Default constructor for Card (2 of Spades).
+     * @brief Default constructor for Card (Ace of Spades).
      */
 
-    Card();
+    Card() noexcept;
 
     /**
      * @brief Initializes Card to specified rank and suit.
      * @param rank_in The rank of the card (enum Rank).
      * @param suit_in The suit of the card (enum Suit).
      */
-    Card(Rank rank_in, Suit suit_in);
+    Card(Rank rank_in, Suit suit_in) noexcept;
 
     /**
      * @brief Gets the rank of the card.
      * @return The rank as enum Rank.
      */
-    Rank get_rank() const;
+    Rank get_rank() const noexcept;
 
     /**
      * @brief Gets the suit of the card.
      * @return The suit as enum Suit.
      */
-    Suit get_suit() const;
+    Suit get_suit() const noexcept;
 
     /**
      * @brief Returns true if card is a face card (Jack, Queen, King or Ace).
      * @return True if face card, false otherwise.
      */
-    bool is_face() const;
+    bool is_face() const noexcept;
 
     /**
      * @brief Returns the rank as a string (for display).
      */
 
-    static std::string rank_to_string(Rank rank);
+    static std::string rank_to_string(Rank rank) noexcept;
 
     /**
      * @brief Returns the suit as a string (for display).
      */
-    static std::string suit_to_string(Suit suit);
+    static std::string suit_to_string(Suit suit) noexcept;
 
 private:
     Rank rank;
@@ -93,7 +93,7 @@ constexpr short NUM_RANKS = 13;
  * @param rhs Right-hand side card.
  * @return True if lhs is lower value than rhs.
  */
-bool operator<(Card const& lhs, Card const& rhs);
+bool operator<(Card const& lhs, Card const& rhs) noexcept;
 
 /**
  * @brief Returns true if lhs is lower value than rhs or the same card as rhs.
@@ -101,7 +101,7 @@ bool operator<(Card const& lhs, Card const& rhs);
  * @param rhs Right-hand side card.
  * @return True if lhs is lower or equal to rhs.
  */
-bool operator<=(Card const& lhs, Card const& rhs);
+bool operator<=(Card const& lhs, Card const& rhs) noexcept;
 
 /**
  * @brief Returns true if lhs is higher value than rhs.
@@ -109,7 +109,7 @@ bool operator<=(Card const& lhs, Card const& rhs);
  * @param rhs Right-hand side card.
  * @return True if lhs is higher value than rhs.
  */
-bool operator>(Card const& lhs, Card const& rhs);
+bool operator>(Card const& lhs, Card const& rhs) noexcept;
 
 /**
  * @brief Returns true if lhs is higher value than rhs or the same card as rhs.
@@ -117,7 +117,7 @@ bool operator>(Card const& lhs, Card const& rhs);
  * @param rhs Right-hand side card.
  * @return True if lhs is higher or equal to rhs.
  */
-bool operator>=(Card const& lhs, Card const& rhs);
+bool operator>=(Card const& lhs, Card const& rhs) noexcept;
 
 /**
  * @brief Returns true if lhs is the same rank as rhs.
@@ -125,7 +125,7 @@ bool operator>=(Card const& lhs, Card const& rhs);
  * @param rhs Right-hand side card.
  * @return True if lhs is the same rank as rhs.
  */
-bool operator==(Card const& lhs, Card const& rhs);
+bool operator==(Card const& lhs, Card const& rhs) noexcept;
 
 /**
  * @brief Returns true if lhs is not the same rank as rhs.
@@ -133,12 +133,12 @@ bool operator==(Card const& lhs, Card const& rhs);
  * @param rhs Right-hand side card.
  * @return True if lhs is not the same rank as rhs.
  */
-bool operator!=(Card const& lhs, Card const& rhs);
+bool operator!=(Card const& lhs, Card const& rhs) noexcept;
 
-/**
- * @brief Prints Card to stream, for example "Two of Spades".
- * @param os Output stream.
- * @param card Card to print.
- * @return Reference to output stream.
- */
-std::ostream& operator<<(std::ostream& os, Card const& card);
+template <>
+struct std::formatter<Card> : std::formatter<std::string> {
+    auto format(Card const& c, auto& ctx) const noexcept {
+        std::string s = Card::rank_to_string(c.get_rank()) + Card::suit_to_string(c.get_suit());
+        return std::formatter<std::string>::format(s, ctx);
+    }
+};

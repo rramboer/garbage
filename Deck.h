@@ -18,47 +18,47 @@ public:
      * The cards of the lowest suit arranged from lowest rank to highest rank, followed by the cards of the next lowest
      * suit in order from lowest to highest rank, and so on.
      */
-    Deck();
+    Deck() noexcept;
 
     /**
      * @brief Returns the next card in the deck and removes it from the deck. If the deck is empty, it is reset first.
      * @return The next Card in the deck.
      */
-    Card deal_one();
+    Card deal_one() noexcept;
 
     /**
      * @brief Resets the deck by moving all cards from the discard pile back into the draw pile, and then discarding the
      * top card.
      */
-    void reset();
+    void reset() noexcept;
 
     /**
      * @brief Resets the deck to a full, ordered deck.
      */
-    void redeal();
+    void redeal() noexcept;
 
     /**
      * @brief Shuffles the Deck using a cryptographically secure random number generator.
      */
-    void shuffle();
+    void shuffle() noexcept;
 
     /**
      * @brief Returns true if there are no more cards left in the draw pile.
      * @return True if draw pile is empty, false otherwise.
      */
-    bool empty() const;
+    bool empty() const noexcept;
 
     /**
      * @brief Returns true if the discard pile is empty.
      * @return True if discard pile is empty, false otherwise.
      */
-    bool discard_pile_empty() const;
+    bool discard_pile_empty() const noexcept;
 
     /**
      * @brief Returns the number of cards in the Deck.
      * @return The number of cards in the Deck.
      */
-    int size() const { return static_cast<int>(draw_pile.size()); }
+    int size() const noexcept;
 
     /**
      * @brief Returns the top card in the discard pile without removing it.
@@ -70,13 +70,13 @@ public:
      * @brief Places a card into the discard pile.
      * @param card The Card to discard.
      */
-    void discard(Card const& card);
+    void discard(Card const& card) noexcept;
 
     /**
      * @brief Takes the top card from the discard pile and returns it.
      * @return The top Card from the discard pile.
      */
-    Card const& take_discard();
+    Card const take_discard();
 
 private:
     /**

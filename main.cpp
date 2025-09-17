@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <fstream>
-#include <iostream>
+#include <print>
 #include <string>
 #include <vector>
 
@@ -8,8 +8,6 @@
 #include "Deck.h"
 #include "Hand.h"
 #include "Player.h"
-
-using namespace std;
 
 /* Configuration constants for the game. */
 namespace Config {
@@ -37,7 +35,7 @@ public:
         }
         deal(std::vector<short>(players.size(), starting_round));
         discard_first_card();
-        cout << "Game start!" << endl << endl;
+        std::println("Game start!\n");
         while (play_round());
         print_scores();
     }
@@ -49,11 +47,11 @@ public:
                 Card const dealt_card = deck.deal_one();
                 players[i]->add_card(dealt_card);
                 if (verbose) {
-                    cout << players[i]->get_name() << " was dealt: " << dealt_card << endl;
+                    std::println("{} was dealt: {}", players[i]->get_name(), dealt_card);
                 }
             }
             if (verbose) {
-                cout << players[i]->get_name() << " was dealt " << num_cards << " cards." << endl << endl;
+                std::println("{} was dealt {} cards.\n", players[i]->get_name(), num_cards);
             }
         }
     }
@@ -62,7 +60,7 @@ public:
         Card first_card = deck.deal_one();
         deck.discard(first_card);
         if (verbose) {
-            cout << "First card discarded: " << first_card << endl;
+            std::println("First card discarded: {}", first_card);
         }
     }
 
@@ -77,7 +75,7 @@ public:
                         deck.shuffle();
                     }
                 }
-                cout << player->get_name() << "'s turn..." << endl;
+                std::println("{}'s turn...", player->get_name());
                 players_won[i] = player->take_turn(deck);
             }
         }
@@ -99,17 +97,16 @@ public:
         bool const is_game_over = game_over();
 
         if (verbose && !is_game_over) {
-            cout << "===========\nRound over. Current scores:" << endl;
+            std::println("===========\nRound over. Current scores:");
             for (auto* player : players) {
-                cout << *player;
+                std::print("{}", *player);
             }
-            cout << endl;
+            std::println("");
         } else if (verbose && is_game_over) {
-            cout << "===========\nGame over!" << endl;
+            std::println("===========\nGame over!");
             return false;
         }
 
-        // TODO: Handle re-dealing cards if not game over.
         deck.redeal();
         if (shuffle_enabled) {
             deck.shuffle();
@@ -127,12 +124,12 @@ public:
     }
 
     void print_scores() const {
-        cout << "Final Scores:" << endl;
+        std::println("Final Scores:");
         for (auto* player : players) {
             if (player->get_round() == 0) {
-                cout << player->get_name() << " is the winner!" << endl;
+                println("{} is the winner!", player->get_name());
             } else {
-                cout << player->get_name() << ": Round " << player->get_round() << endl;
+                println("{}: Round {}", player->get_name(), player->get_round());
             }
         }
     }
@@ -154,39 +151,39 @@ private:
 
 int main(int argc, char* argv[]) {
     if (argc != 4 && argc != 5) {
-        cerr << "Usage: " << argv[0] << " num_players starting_round shuffle_enabled (opt)verbose" << endl;
+        std::cerr << "Usage: " << argv[0] << " num_players starting_round shuffle_enabled (opt)verbose" << std::endl;
         exit(1);
     }
 
-    int num_players = stoi(argv[1]);
+    int num_players = std::stoi(argv[1]);
 
-    int starting_round = stoi(argv[2]);
+    int starting_round = std::stoi(argv[2]);
 
-    std::string shuffle_enabled_in = string(argv[3]);
+    std::string shuffle_enabled_in(argv[3]);
     std::transform(shuffle_enabled_in.begin(), shuffle_enabled_in.end(), shuffle_enabled_in.begin(), ::tolower);
     bool shuffle_enabled = (shuffle_enabled_in == "true" || shuffle_enabled_in == "1" || shuffle_enabled_in == "t");
 
     bool verbose = Config::VERBOSE_GAMEPLAY;
     if (argc == 5) {
-        std::string verbose_in = string(argv[4]);
+        std::string verbose_in(argv[4]);
         std::transform(verbose_in.begin(), verbose_in.end(), verbose_in.begin(), ::tolower);
         verbose = (verbose_in == "true" || verbose_in == "1" || verbose_in == "t");
     }
 
     if (num_players < 1 || num_players > Config::MAX_PLAYER_COUNT) {
-        cerr << "num_players must be between 1 and " << Config::MAX_PLAYER_COUNT << endl;
+        std::cerr << "num_players must be between 1 and " << Config::MAX_PLAYER_COUNT << std::endl;
         exit(1);
     }
 
     if (starting_round < 1 || starting_round > Config::MAX_STARTING_ROUND) {
-        cerr << "starting_round must be between 1 and " << Config::MAX_STARTING_ROUND << endl;
+        std::cerr << "starting_round must be between 1 and " << Config::MAX_STARTING_ROUND << std::endl;
         exit(1);
     }
 
-    vector<Player*> players;
+    std::vector<Player*> players;
 
     for (short i = 0; i < num_players; i++) {
-        Player* player = Player_factory("Player " + to_string(i + 1), starting_round);
+        Player* player = Player_factory("Player " + std::to_string(i + 1), starting_round);
         players.push_back(player);
     }
 

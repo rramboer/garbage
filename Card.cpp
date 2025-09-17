@@ -7,30 +7,27 @@
 
 #include <utility>
 
-using namespace std;
-
-
-Card::Card()
+Card::Card() noexcept
     : rank(Rank::ACE)
     , suit(Suit::SPADES) {}
 
-Card::Card(Rank rank_in, Suit suit_in)
+Card::Card(Rank rank_in, Suit suit_in) noexcept
     : rank(rank_in)
     , suit(suit_in) {}
 
-Card::Rank Card::get_rank() const {
+Card::Rank Card::get_rank() const noexcept {
     return rank;
 }
 
-Card::Suit Card::get_suit() const {
+Card::Suit Card::get_suit() const noexcept {
     return suit;
 }
 
-bool Card::is_face() const {
+bool Card::is_face() const noexcept {
     return (rank == Rank::JACK || rank == Rank::QUEEN || rank == Rank::KING);
 }
 
-std::string Card::rank_to_string(Rank rank) {
+std::string Card::rank_to_string(Rank rank) noexcept {
     switch (rank) {
     case Rank::ACE:
         return "A";
@@ -63,7 +60,7 @@ std::string Card::rank_to_string(Rank rank) {
     }
 }
 
-std::string Card::suit_to_string(Suit suit) {
+std::string Card::suit_to_string(Suit suit) noexcept {
     switch (suit) {
     case Suit::SPADES:
         return "♠";
@@ -78,33 +75,27 @@ std::string Card::suit_to_string(Suit suit) {
     }
 }
 
-bool operator<(Card const& lhs, Card const& rhs) {
+bool operator<(Card const& lhs, Card const& rhs) noexcept {
     return (static_cast<short>(lhs.get_rank()) < static_cast<short>(rhs.get_rank()));
 }
 
 
-bool operator>(Card const& lhs, Card const& rhs) {
+bool operator>(Card const& lhs, Card const& rhs) noexcept {
     return ((lhs != rhs) && !(lhs < rhs));
 }
 
-bool operator==(Card const& lhs, Card const& rhs) {
+bool operator==(Card const& lhs, Card const& rhs) noexcept {
     return lhs.get_rank() == rhs.get_rank();
 }
 
-bool operator!=(Card const& lhs, Card const& rhs) {
+bool operator!=(Card const& lhs, Card const& rhs) noexcept {
     return !(lhs == rhs);
 }
 
-bool operator>=(Card const& lhs, Card const& rhs) {
+bool operator>=(Card const& lhs, Card const& rhs) noexcept {
     return ((lhs == rhs) || (lhs > rhs));
 }
 
-bool operator<=(Card const& lhs, Card const& rhs) {
+bool operator<=(Card const& lhs, Card const& rhs) noexcept {
     return ((lhs == rhs) || (lhs < rhs));
-}
-
-
-ostream& operator<<(ostream& os, Card const& card) {
-    os << Card::rank_to_string(card.get_rank()) << Card::suit_to_string(card.get_suit());
-    return os;
 }
