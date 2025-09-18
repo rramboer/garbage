@@ -13,7 +13,6 @@
 namespace Config {
 short const MAX_PLAYER_COUNT = 4;
 short const MAX_STARTING_ROUND = 10;
-constexpr bool VERBOSE_GAMEPLAY = true;
 }
 
 /**
@@ -24,12 +23,11 @@ constexpr bool VERBOSE_GAMEPLAY = true;
  */
 class Game {
 public:
-    Game(std::vector<Player*> const& players_in, short starting_round_in, bool shuffle_enabled_in, bool verbose_in)
+    Game(std::vector<Player*> const& players_in, short starting_round_in, bool shuffle_enabled_in)
         : players(players_in)
         , deck()
         , starting_round(starting_round_in)
-        , shuffle_enabled(shuffle_enabled_in)
-        , verbose(verbose_in) {
+        , shuffle_enabled(shuffle_enabled_in) {
         if (shuffle_enabled) {
             deck.shuffle();
         }
@@ -46,22 +44,15 @@ public:
             for (short j = 0; j < num_cards; ++j) {
                 Card const dealt_card = deck.deal_one();
                 players[i]->add_card(dealt_card);
-                if (verbose) {
-                    std::println("{} was dealt: {}", players[i]->get_name(), dealt_card);
-                }
+                std::println("\n{} was dealt: {}", players[i]->get_name(), dealt_card);
             }
-            if (verbose) {
-                std::println("{} was dealt {} cards.\n", players[i]->get_name(), num_cards);
-            }
+            std::println("{} was dealt {} {}.\n", players[i]->get_name(), num_cards, num_cards == 1 ? "card" : "cards");
         }
     }
 
     void discard_first_card() {
         Card first_card = deck.deal_one();
         deck.discard(first_card);
-        if (verbose) {
-            std::println("First card discarded: {}", first_card);
-        }
     }
 
     std::vector<bool> take_turns() {
@@ -96,13 +87,13 @@ public:
 
         bool const is_game_over = game_over();
 
-        if (verbose && !is_game_over) {
+        if (!is_game_over) {
             std::println("===========\nRound over. Current scores:");
             for (auto* player : players) {
                 std::print("{}", *player);
             }
             std::println("");
-        } else if (verbose && is_game_over) {
+        } else if (is_game_over) {
             std::println("===========\nGame over!");
             return false;
         }
@@ -141,17 +132,16 @@ public:
     }
 
 private:
-    std::vector<Player*> players;
     Deck deck;
+    std::vector<Player*> players;
     short starting_round;
     bool shuffle_enabled;
-    bool verbose;
 };
 
 
 int main(int argc, char* argv[]) {
-    if (argc != 4 && argc != 5) {
-        std::cerr << "Usage: " << argv[0] << " num_players starting_round shuffle_enabled (opt)verbose" << std::endl;
+    if (argc != 4) {
+        std::cerr << "Usage: " << argv[0] << " num_players starting_round shuffle_enabled" << std::endl;
         exit(1);
     }
 
@@ -160,15 +150,9 @@ int main(int argc, char* argv[]) {
     int starting_round = std::stoi(argv[2]);
 
     std::string shuffle_enabled_in(argv[3]);
-    std::transform(shuffle_enabled_in.begin(), shuffle_enabled_in.end(), shuffle_enabled_in.begin(), ::tolower);
+    std::transform(shuffle_enabled_in.begin(), shuffle_enabled_in.end(), shuffle_enabled_in.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
     bool shuffle_enabled = (shuffle_enabled_in == "true" || shuffle_enabled_in == "1" || shuffle_enabled_in == "t");
-
-    bool verbose = Config::VERBOSE_GAMEPLAY;
-    if (argc == 5) {
-        std::string verbose_in(argv[4]);
-        std::transform(verbose_in.begin(), verbose_in.end(), verbose_in.begin(), ::tolower);
-        verbose = (verbose_in == "true" || verbose_in == "1" || verbose_in == "t");
-    }
 
     if (num_players < 1 || num_players > Config::MAX_PLAYER_COUNT) {
         std::cerr << "num_players must be between 1 and " << Config::MAX_PLAYER_COUNT << std::endl;
@@ -187,7 +171,7 @@ int main(int argc, char* argv[]) {
         players.push_back(player);
     }
 
-    Game game(players, starting_round, shuffle_enabled, verbose);
+    Game game(players, starting_round, shuffle_enabled);
 
     return 0;
 }

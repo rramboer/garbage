@@ -7,6 +7,6 @@
 
 #include <algorithm>
 
-Player* Player_factory(std::string const name, short const round) {
-    return new ComputerPlayer(name, round);
+Player* Player_factory(std::string name, short round) {
+    return new ComputerPlayer(std::move(name), std::move(round));
 }

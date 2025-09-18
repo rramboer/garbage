@@ -58,12 +58,12 @@ public:
      * @brief Returns the rank as a string (for display).
      */
 
-    static std::string rank_to_string(Rank rank) noexcept;
+    static std::string rank_to_string(Rank rank);
 
     /**
      * @brief Returns the suit as a string (for display).
      */
-    static std::string suit_to_string(Suit suit) noexcept;
+    static std::string suit_to_string(Suit suit);
 
 private:
     Rank rank;

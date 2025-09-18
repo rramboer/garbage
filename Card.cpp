@@ -27,7 +27,7 @@ bool Card::is_face() const noexcept {
     return (rank == Rank::JACK || rank == Rank::QUEEN || rank == Rank::KING);
 }
 
-std::string Card::rank_to_string(Rank rank) noexcept {
+std::string Card::rank_to_string(Rank rank) {
     switch (rank) {
     case Rank::ACE:
         return "A";
@@ -60,7 +60,7 @@ std::string Card::rank_to_string(Rank rank) noexcept {
     }
 }
 
-std::string Card::suit_to_string(Suit suit) noexcept {
+std::string Card::suit_to_string(Suit suit) {
     switch (suit) {
     case Suit::SPADES:
         return "♠";
