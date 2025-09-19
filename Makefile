@@ -1,23 +1,27 @@
 CXX ?= g++
-CXXFLAGS ?= -Wall -Werror -Wextra -pedantic -std=c++26 -g
+CXXFLAGS ?= -Wall -Werror -Wextra -pedantic -std=c++26 -g -Iinclude
 DEPFLAGS = -MMD -MP
 
-SRC := $(wildcard *.cpp)
-OBJ := $(SRC:.cpp=.o)
+SRC := $(wildcard src/*.cpp)
+OBJ := $(patsubst src/%.cpp,build/%.o,$(SRC))
 DEP := $(OBJ:.o=.d)
 
 all: main
+
 
 main: $(OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 
-%.o: %.cpp
+build/%.o: src/%.cpp | build
 	$(CXX) $(CXXFLAGS) $(DEPFLAGS) -c $< -o $@
+
+build:
+	@mkdir -p build
 
 -include $(DEP)
 
 .PHONY: clean
 
 clean:
-	rm -f main $(OBJ) $(DEP)
+	rm -rf build
