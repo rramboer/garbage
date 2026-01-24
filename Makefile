@@ -24,4 +24,4 @@ build:
 .PHONY: clean
 
 clean:
-	rm -rf build
+	rm -rf build main
