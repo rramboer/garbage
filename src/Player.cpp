@@ -5,8 +5,10 @@
 
 #include "Player.h"
 
-#include <algorithm>
+#include <memory>
+#include <string>
+#include <utility>
 
-Player* Player_factory(std::string name, short round) {
-    return new ComputerPlayer(std::move(name), std::move(round));
+std::unique_ptr<Player> Player_factory(std::string name, int round) {
+    return std::make_unique<ComputerPlayer>(std::move(name), round);
 }

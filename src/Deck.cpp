@@ -6,45 +6,54 @@
 #include "Deck.h"
 
 #include <algorithm>
-#include <iostream>
 #include <random>
-#include <ranges>
+#include <stdexcept>
 
-Deck::Deck() noexcept {
-    discard_pile.clear();
-    draw_pile.clear();
+#include "Card.h"
+
+Deck::Deck(bool shuffle_enabled_in)
+    : shuffle_enabled(shuffle_enabled_in) {
     draw_pile.reserve(DEFAULT_DECK_SIZE);
-    for (auto suit : std::views::iota(0, static_cast<int>(NUM_SUITS))) {
-        for (auto rank : std::views::iota(0, static_cast<int>(NUM_RANKS))) {
-            draw_pile.emplace_back(RANK_VALUES_BY_WEIGHT[rank], static_cast<Card::Suit>(suit));
+    for (int suit = 0; suit < NUM_SUITS; ++suit) {
+        for (int rank = 1; rank <= NUM_RANKS; ++rank) {
+            draw_pile.emplace_back(static_cast<Card::Rank>(rank), static_cast<Card::Suit>(suit));
         }
+    }
+    if (shuffle_enabled) {
+        shuffle();
     }
 }
 
-Card Deck::deal_one() noexcept {
+Card Deck::deal_one() {
     if (empty()) {
         reset();
+    }
+    if (empty()) {
+        throw std::runtime_error("Deck::deal_one: no cards available in the draw or discard pile");
     }
     Card dealt_card = draw_pile.back();
     draw_pile.pop_back();
     return dealt_card;
 }
 
-void Deck::reset() noexcept {
+void Deck::reset() {
     if (!discard_pile_empty()) {
-        Card top_discard = peek_discard();
+        Card const top_discard = peek_discard();
         discard_pile.pop_back();
         draw_pile.insert(draw_pile.end(), discard_pile.begin(), discard_pile.end());
         discard_pile.clear();
         discard_pile.push_back(top_discard);
+        if (shuffle_enabled) {
+            shuffle();
+        }
     }
 }
 
-void Deck::redeal() noexcept {
-    *this = Deck {};
+void Deck::redeal() {
+    *this = Deck { shuffle_enabled };
 }
 
-void Deck::shuffle() noexcept {
+void Deck::shuffle() {
     static std::mt19937_64 rng(std::random_device {}());
     std::ranges::shuffle(draw_pile, rng);
 }
@@ -68,15 +77,15 @@ Card const& Deck::peek_discard() const {
     return discard_pile.back();
 }
 
-void Deck::discard(Card const& card) noexcept {
+void Deck::discard(Card const& card) {
     discard_pile.push_back(card);
 }
 
-Card const Deck::take_discard() {
+Card Deck::take_discard() {
     if (discard_pile_empty()) {
         throw std::out_of_range("Discard pile is empty");
     }
-    Card const& top_card = discard_pile.back();
+    Card top_card = discard_pile.back();
     discard_pile.pop_back();
     return top_card;
 }

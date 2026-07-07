@@ -6,10 +6,10 @@
 #pragma once
 
 #include <format>
-#include <optional>
+#include <memory>
 #include <print>
 #include <string>
-#include <vector>
+#include <utility>
 
 #include "Card.h"
 #include "Deck.h"
@@ -20,29 +20,39 @@
  */
 class Player {
 public:
-    Player(std::string const name_in, short const round_in) noexcept
+    Player(std::string name_in, int round_in) noexcept
         : round(round_in)
-        , name(name_in) {}
+        , name(std::move(name_in)) {}
+
+    Player(Player const&) = delete;
+    Player& operator=(Player const&) = delete;
+    Player(Player&&) = delete;
+    Player& operator=(Player&&) = delete;
 
     /**
      * @brief Returns player's name.
      */
-    virtual std::string const& get_name() const noexcept = 0;
+    [[nodiscard]] std::string const& get_name() const noexcept { return name; }
 
     /**
      * @brief Returns player's current round.
      */
-    virtual short const& get_round() const noexcept = 0;
+    [[nodiscard]] int get_round() const noexcept { return round; }
+
+    /**
+     * @brief Returns the player's hand.
+     */
+    [[nodiscard]] Hand const& get_hand() const noexcept { return hand; }
 
     /**
      * @brief Adds Card to Player's hand.
      */
-    virtual void add_card(Card const& c) noexcept = 0;
+    virtual void add_card(Card const& c) = 0;
 
     /**
      * @brief Resets the player's hand.
      */
-    virtual void reset_hand() noexcept = 0;
+    virtual void reset_hand() = 0;
 
     /**
      * @brief Plays a turn according to their strategy. The card is removed from the player's hand
@@ -50,7 +60,7 @@ public:
      * @param deck The deck from which to draw a card if needed.
      * @return true if the player completed their round in this turn. Otherwise false.
      */
-    virtual bool take_turn(Deck& deck) noexcept = 0;
+    virtual bool take_turn(Deck& deck) = 0;
 
     /**
      * @brief Decreases the player's round by 1 upon winning a round.
@@ -60,36 +70,30 @@ public:
     /**
      * @brief Virtual destructor for Player.
      */
-    virtual ~Player() noexcept {}
+    virtual ~Player() = default;
 
 protected:
-    short round;
+    int round;
     std::string name;
     Hand hand;
 };
 
-
 /**
- * @brief Returns a pointer to a player with the given name and round.
+ * @brief Returns an owning pointer to a player with the given name and round.
  */
-Player* Player_factory(std::string const name, short const round);
-
+std::unique_ptr<Player> Player_factory(std::string name, int round);
 
 /**
  * @brief A computer player implementation of the Player interface.
  */
 class ComputerPlayer : public Player {
 public:
-    ComputerPlayer(std::string const& name_in, short round_in) noexcept
-        : Player(name_in, round_in) {}
+    ComputerPlayer(std::string name_in, int round_in) noexcept
+        : Player(std::move(name_in), round_in) {}
 
-    std::string const& get_name() const noexcept override { return name; }
+    void reset_hand() override { hand.reset(); }
 
-    short const& get_round() const noexcept override { return round; }
-
-    void reset_hand() noexcept override { hand.reset(); }
-
-    void add_card(Card const& c) noexcept override { hand.add_card(c); }
+    void add_card(Card const& c) override { hand.add_card(c); }
 
     void register_win() noexcept override {
         if (round > 0) [[likely]] {
@@ -97,7 +101,7 @@ public:
         }
     }
 
-    bool take_turn(Deck& deck) noexcept override {
+    bool take_turn(Deck& deck) override {
         std::println("{}'s turn. Current hand: {}", name, hand);
         std::println("Top of discard pile: {}", deck.peek_discard());
 
@@ -116,10 +120,9 @@ public:
     }
 };
 
-template <>
-struct std::formatter<Player> : std::formatter<std::string> {
-    auto format(Player const& p, auto& ctx) const noexcept {
-        std::string s = p.get_name() + "\nRound: " + std::to_string(p.get_round()) + "\n";
+template <> struct std::formatter<Player> : std::formatter<std::string> {
+    auto format(Player const& p, auto& ctx) const {
+        std::string const s = p.get_name() + "\nRound: " + std::to_string(p.get_round()) + "\n";
         return std::formatter<std::string>::format(s, ctx);
     }
 };

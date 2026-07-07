@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: Build & test (${{ matrix.compiler.name }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - { name: g++-14, cxx: g++-14, packages: g++-14 }
+          - { name: clang++-18, cxx: clang++-18, packages: "clang-18 libstdc++-14-dev" }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.compiler.packages }}
+      - name: Configure
+        run: cmake --preset release
+        env:
+          CXX: ${{ matrix.compiler.cxx }}
+      - name: Build
+        run: cmake --build --preset release -j"$(nproc)"
+      - name: Test
+        run: ctest --preset release
+      - name: Smoke test
+        run: ./build/release/garbage 2 3 false > /dev/null
+
+  sanitizers:
+    name: ASan + UBSan
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14
+      - name: Configure
+        run: cmake --preset asan
+        env:
+          CXX: g++-14
+      - name: Build
+        run: cmake --build --preset asan -j"$(nproc)"
+      - name: Test
+        run: ctest --preset asan
+      - name: Smoke test
+        run: ./build/asan/garbage 2 3 true > /dev/null
+
+  format:
+    name: clang-format
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang-format
+        run: pipx install clang-format==22.1.5
+      - name: Check formatting
+        run: clang-format --dry-run --Werror src/*.cpp include/*.h tests/*.cpp
+
+  tidy:
+    name: clang-tidy
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14
+          pipx install clang-tidy==22.1.7
+      - name: Configure (generates compile_commands.json)
+        run: cmake --preset release -DBUILD_TESTING=OFF
+        env:
+          CXX: g++-14
+      - name: Run clang-tidy
+        run: clang-tidy -p build/release src/*.cpp

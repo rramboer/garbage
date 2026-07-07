@@ -1,27 +1,39 @@
-CXX ?= g++
-CXXFLAGS ?= -Wall -Werror -Wextra -pedantic -std=c++26 -g -Iinclude
-DEPFLAGS = -MMD -MP
+# Convenience wrapper around the CMake build. See CMakePresets.json for the
+# debug/release/asan presets; all artifacts land in build/<preset>/.
+PRESET ?= release
 
-SRC := $(wildcard src/*.cpp)
-OBJ := $(patsubst src/%.cpp,build/%.o,$(SRC))
-DEP := $(OBJ:.o=.d)
+SOURCES := $(wildcard src/*.cpp) $(wildcard include/*.h) $(wildcard tests/*.cpp)
 
-all: main
+.PHONY: all build test run sanitize format format-check lint install clean
 
-
-main: $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $^
-
-
-build/%.o: src/%.cpp | build
-	$(CXX) $(CXXFLAGS) $(DEPFLAGS) -c $< -o $@
+all: build
 
 build:
-	@mkdir -p build
+	cmake --preset $(PRESET)
+	cmake --build --preset $(PRESET)
 
--include $(DEP)
+test: build
+	ctest --preset $(PRESET)
 
-.PHONY: clean
+run: build
+	./build/$(PRESET)/garbage 2 10 true
+
+sanitize:
+	cmake --preset asan
+	cmake --build --preset asan
+	ctest --preset asan
+
+format:
+	clang-format -i $(SOURCES)
+
+format-check:
+	clang-format --dry-run --Werror $(SOURCES)
+
+lint: build
+	clang-tidy -p build/$(PRESET) $(wildcard src/*.cpp)
+
+install: build
+	cmake --install build/$(PRESET)
 
 clean:
-	rm -rf build main
+	rm -rf build
