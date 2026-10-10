@@ -16,7 +16,7 @@ jobs:
           - { name: g++-14, cxx: g++-14, packages: g++-14 }
           - { name: clang++-18, cxx: clang++-18, packages: "clang-18 libstdc++-14-dev" }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install compiler
         run: |
           sudo apt-get update
@@ -36,7 +36,7 @@ jobs:
     name: ASan + UBSan
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install compiler
         run: |
           sudo apt-get update
@@ -56,9 +56,9 @@ jobs:
     name: clang-format
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install clang-format
-        run: pipx install clang-format==22.1.5
+        run: pipx install clang-format==23.1.3
       - name: Check formatting
         run: clang-format --dry-run --Werror src/*.cpp include/*.h tests/*.cpp
 
@@ -66,12 +66,12 @@ jobs:
     name: clang-tidy
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install toolchain
         run: |
           sudo apt-get update
           sudo apt-get install -y g++-14
-          pipx install clang-tidy==22.1.7
+          pipx install clang-tidy==22.1.8
       - name: Configure (generates compile_commands.json)
         run: cmake --preset release -DBUILD_TESTING=OFF
         env:
