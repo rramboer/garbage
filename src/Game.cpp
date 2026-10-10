@@ -1,29 +1,47 @@
+/**
+ * @file Game.cpp
+ * @brief Implementation of the Game class.
+ */
+
 #include "Game.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <memory>
 #include <print>
+#include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
-Game::Game(std::vector<Player*> const& players_in, short starting_round_in, bool shuffle_enabled_in)
-    : deck()
-    , players(players_in)
-    , starting_round(starting_round_in)
-    , shuffle_enabled(shuffle_enabled_in) {
-    if (shuffle_enabled) {
-        deck.shuffle();
+#include "Card.h"
+#include "Player.h"
+
+Game::Game(std::vector<std::unique_ptr<Player>> players_in, bool shuffle_enabled_in)
+    : deck(shuffle_enabled_in)
+    , players(std::move(players_in)) {
+    if (players.empty()) {
+        throw std::invalid_argument("Game requires at least one player");
     }
-    deal(std::vector<short>(players.size(), starting_round));
+}
+
+void Game::run() {
+    std::vector<int> rounds;
+    rounds.reserve(players.size());
+    for (auto const& player : players) {
+        rounds.push_back(player->get_round());
+    }
+    deal(rounds);
     discard_first_card();
     std::println("Game start!\n");
-    while (play_round());
+    while (play_round()) {}
     print_scores();
 }
 
-void Game::deal(std::vector<short> cards_per_player) {
+void Game::deal(std::vector<int> const& cards_per_player) {
     for (size_t i = 0; i < players.size(); ++i) {
-        short const num_cards = cards_per_player[i];
-        for (short j = 0; j < num_cards; ++j) {
+        int const num_cards = cards_per_player[i];
+        for (int j = 0; j < num_cards; ++j) {
             Card const dealt_card = deck.deal_one();
             players[i]->add_card(dealt_card);
             std::println("\n{} was dealt: {}", players[i]->get_name(), dealt_card);
@@ -33,30 +51,35 @@ void Game::deal(std::vector<short> cards_per_player) {
 }
 
 void Game::discard_first_card() {
-    Card first_card = deck.deal_one();
+    Card const first_card = deck.deal_one();
     deck.discard(first_card);
 }
 
 std::vector<bool> Game::take_turns() {
     std::vector<bool> players_won(players.size(), false);
-    while (!std::ranges::any_of(players_won.begin(), players_won.end(), [](bool b) { return b; })) {
+    int cards_showing = total_cards_showing();
+    int stalled_passes = 0;
+    while (!std::ranges::any_of(players_won, [](bool won) { return won; })) {
         for (size_t i = 0; i < players.size(); ++i) {
-            auto* player = players[i];
-            if (deck.empty()) {
-                deck.reset();
-                if (shuffle_enabled) {
-                    deck.shuffle();
-                }
+            std::println("{}'s turn...", players[i]->get_name());
+            players_won[i] = players[i]->take_turn(deck);
+        }
+        int const now_showing = total_cards_showing();
+        if (now_showing == cards_showing) {
+            if (++stalled_passes >= MAX_STALLED_PASSES) {
+                throw std::runtime_error("Stalemate detected: no player has made progress in "
+                                         + std::to_string(MAX_STALLED_PASSES) + " passes");
             }
-            std::println("{}'s turn...", player->get_name());
-            players_won[i] = player->take_turn(deck);
+        } else {
+            stalled_passes = 0;
+            cards_showing = now_showing;
         }
     }
     return players_won;
 }
 
 bool Game::game_over() const noexcept {
-    return std::ranges::any_of(players.begin(), players.end(), [](auto* p) { return p->get_round() == 0; });
+    return std::ranges::any_of(players, [](auto const& player) { return player->get_round() == 0; });
 }
 
 bool Game::play_round() {
@@ -71,7 +94,7 @@ bool Game::play_round() {
 
     if (!is_game_over) {
         std::println("===========\nRound over. Current scores:");
-        for (auto* player : players) {
+        for (auto const& player : players) {
             std::print("{}", *player);
         }
         std::println("");
@@ -81,12 +104,10 @@ bool Game::play_round() {
     }
 
     deck.redeal();
-    if (shuffle_enabled) {
-        deck.shuffle();
-    }
 
-    std::vector<short> rounds_remaining;
-    for (auto* player : players) {
+    std::vector<int> rounds_remaining;
+    rounds_remaining.reserve(players.size());
+    for (auto const& player : players) {
         rounds_remaining.push_back(player->get_round());
         player->reset_hand();
     }
@@ -98,17 +119,19 @@ bool Game::play_round() {
 
 void Game::print_scores() const {
     std::println("Final Scores:");
-    for (auto* player : players) {
+    for (auto const& player : players) {
         if (player->get_round() == 0) {
-            println("{} is the winner!", player->get_name());
+            std::println("{} is the winner!", player->get_name());
         } else {
-            println("{}: Round {}", player->get_name(), player->get_round());
+            std::println("{}: Round {}", player->get_name(), player->get_round());
         }
     }
 }
 
-Game::~Game() {
-    for (auto* player : players) {
-        delete player;
+int Game::total_cards_showing() const noexcept {
+    int total = 0;
+    for (auto const& player : players) {
+        total += static_cast<int>(std::ranges::count(player->get_hand().get_showing(), true));
     }
+    return total;
 }

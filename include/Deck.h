@@ -5,92 +5,94 @@
 
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "Card.h"
-
 
 class Deck {
 public:
     /**
      * @brief Initializes the Deck to be in the following standard order:
      * The cards of the lowest suit arranged from lowest rank to highest rank, followed by the cards of the next lowest
-     * suit in order from lowest to highest rank, and so on.
+     * suit in order from lowest to highest rank, and so on. If shuffling is enabled, the fresh deck is then shuffled,
+     * and every subsequent reset()/redeal() reshuffles as well.
+     * @param shuffle_enabled_in True to shuffle the deck now and whenever it is rebuilt.
      */
-    Deck() noexcept;
+    explicit Deck(bool shuffle_enabled_in = false);
 
     /**
-     * @brief Returns the next card in the deck and removes it from the deck. If the deck is empty, it is reset first.
+     * @brief Returns the next card in the deck and removes it from the deck. If the draw pile is empty, it is reset
+     * from the discard pile first.
      * @return The next Card in the deck.
+     * @throws std::runtime_error if no card is available in either pile. Callers must keep at least two cards
+     * circulating outside players' hands (the CLI limits of 4 players and round 10 guarantee this).
      */
-    Card deal_one() noexcept;
+    Card deal_one();
 
     /**
-     * @brief Resets the deck by moving all cards from the discard pile back into the draw pile, and then discarding the
-     * top card.
+     * @brief Resets the deck by moving all cards from the discard pile back into the draw pile, keeping the top
+     * discard in place. The rebuilt draw pile is reshuffled if shuffling is enabled.
      */
-    void reset() noexcept;
+    void reset();
 
     /**
-     * @brief Resets the deck to a full, ordered deck.
+     * @brief Resets the deck to a full, ordered deck (reshuffled if shuffling is enabled).
      */
-    void redeal() noexcept;
+    void redeal();
 
     /**
-     * @brief Shuffles the Deck using a cryptographically secure random number generator.
+     * @brief Shuffles the draw pile using a Mersenne Twister PRNG seeded once from std::random_device.
      */
-    void shuffle() noexcept;
+    void shuffle();
 
     /**
      * @brief Returns true if there are no more cards left in the draw pile.
      * @return True if draw pile is empty, false otherwise.
      */
-    bool empty() const noexcept;
+    [[nodiscard]] bool empty() const noexcept;
 
     /**
      * @brief Returns true if the discard pile is empty.
      * @return True if discard pile is empty, false otherwise.
      */
-    bool discard_pile_empty() const noexcept;
+    [[nodiscard]] bool discard_pile_empty() const noexcept;
 
     /**
-     * @brief Returns the number of cards in the Deck.
-     * @return The number of cards in the Deck.
+     * @brief Returns the number of cards in the draw pile.
+     * @return The number of cards in the draw pile.
      */
-    int size() const noexcept;
+    [[nodiscard]] int size() const noexcept;
 
     /**
      * @brief Returns the top card in the discard pile without removing it.
      * @return The top Card in the discard pile.
+     * @throws std::out_of_range if the discard pile is empty.
      */
-    Card const& peek_discard() const;
+    [[nodiscard]] Card const& peek_discard() const;
 
     /**
      * @brief Places a card into the discard pile.
      * @param card The Card to discard.
      */
-    void discard(Card const& card) noexcept;
+    void discard(Card const& card);
 
     /**
      * @brief Takes the top card from the discard pile and returns it.
      * @return The top Card from the discard pile.
+     * @throws std::out_of_range if the discard pile is empty.
      */
-    Card const take_discard();
+    Card take_discard();
 
 private:
     /**
      * @brief Default number of Cards in the Deck.
      */
-    inline static constexpr int DEFAULT_DECK_SIZE = NUM_SUITS * NUM_RANKS;
+    static constexpr int DEFAULT_DECK_SIZE = NUM_SUITS * NUM_RANKS;
 
-    // Use Card::Rank and Card::Suit for value arrays
-    static constexpr Card::Suit SUIT_VALUES_BY_WEIGHT[4]
-        = { Card::Suit::SPADES, Card::Suit::HEARTS, Card::Suit::CLUBS, Card::Suit::DIAMONDS };
-    static constexpr Card::Rank RANK_VALUES_BY_WEIGHT[13]
-        = { Card::Rank::ACE,  Card::Rank::TWO,   Card::Rank::THREE, Card::Rank::FOUR, Card::Rank::FIVE,
-            Card::Rank::SIX,  Card::Rank::SEVEN, Card::Rank::EIGHT, Card::Rank::NINE, Card::Rank::TEN,
-            Card::Rank::JACK, Card::Rank::QUEEN, Card::Rank::KING };
+    /**
+     * @brief True if the deck reshuffles whenever it is rebuilt.
+     */
+    bool shuffle_enabled = false;
 
     /**
      * @brief Cards in the Deck.

@@ -1,5 +1,11 @@
-/* Configuration constants for the game. */
+/**
+ * @file const.h
+ * @brief Configuration constants for the game.
+ */
+
+#pragma once
+
 namespace Config {
-short const MAX_PLAYER_COUNT = 4;
-short const MAX_STARTING_ROUND = 10;
+inline constexpr int MAX_PLAYER_COUNT = 4;
+inline constexpr int MAX_STARTING_ROUND = 10;
 }

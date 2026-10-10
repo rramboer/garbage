@@ -1,5 +1,12 @@
-*.o
-*.d
-main
+# Build output
+/build/
+
+# Editor/tooling
 .vscode/
-build/
+.cache/
+compile_commands.json
+
+# Crash dumps
+core
+core.*
+vgcore.*

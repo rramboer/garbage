@@ -5,6 +5,7 @@
 
 #include "Card.h"
 
+#include <string>
 #include <utility>
 
 Card::Card() noexcept
@@ -73,29 +74,4 @@ std::string Card::suit_to_string(Suit suit) {
     default:
         std::unreachable();
     }
-}
-
-bool operator<(Card const& lhs, Card const& rhs) noexcept {
-    return (static_cast<short>(lhs.get_rank()) < static_cast<short>(rhs.get_rank()));
-}
-
-
-bool operator>(Card const& lhs, Card const& rhs) noexcept {
-    return ((lhs != rhs) && !(lhs < rhs));
-}
-
-bool operator==(Card const& lhs, Card const& rhs) noexcept {
-    return lhs.get_rank() == rhs.get_rank();
-}
-
-bool operator!=(Card const& lhs, Card const& rhs) noexcept {
-    return !(lhs == rhs);
-}
-
-bool operator>=(Card const& lhs, Card const& rhs) noexcept {
-    return ((lhs == rhs) || (lhs > rhs));
-}
-
-bool operator<=(Card const& lhs, Card const& rhs) noexcept {
-    return ((lhs == rhs) || (lhs < rhs));
 }

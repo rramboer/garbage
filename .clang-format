@@ -1,0 +1,17 @@
+# Captures the project's existing style: 4-space indent, 120-column limit,
+# attached braces, and leading-comma constructor initializer lists.
+---
+Language: Cpp
+BasedOnStyle: WebKit
+ColumnLimit: 120
+BreakBeforeBraces: Attach
+BreakConstructorInitializers: BeforeComma
+PointerAlignment: Left
+AlignAfterOpenBracket: Align
+AllowShortFunctionsOnASingleLine: Inline
+SpaceInEmptyBraces: Never
+FixNamespaceComments: false
+IndentCaseLabels: false
+NamespaceIndentation: None
+SpaceBeforeCpp11BracedList: true
+Standard: Latest

@@ -1,0 +1,31 @@
+# Checks are intentionally broad; targeted exclusions below are style choices, not suppressed bugs:
+#  - modernize-use-trailing-return-type: the codebase uses leading return types.
+#  - readability-identifier-length: short loop/lambda names (i, j, c) are idiomatic here.
+#  - *-magic-numbers: card games are full of inherent constants (13 ranks, 4 suits, position math).
+#  - readability-convert-member-functions-to-static / misc-use-internal-linkage: public API surface
+#    is kept as member functions for the documented class interfaces.
+#  - misc/cppcoreguidelines-non-private-member-variables-in-classes: Player deliberately shares
+#    state with subclasses via protected members.
+#  - cppcoreguidelines-pro-bounds-avoid-unchecked-container-access: every operator[] call is
+#    bounds-checked by the surrounding logic, and the ASan/UBSan CI job verifies it at runtime;
+#    the project does not depend on the GSL, so gsl::at is unavailable.
+#  - altera-*, fuchsia-*, llvmlibc-*, etc. are not enabled (domain-specific profiles).
+---
+Checks: >
+  bugprone-*,
+  cppcoreguidelines-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  -modernize-use-trailing-return-type,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-convert-member-functions-to-static,
+  -misc-non-private-member-variables-in-classes,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access
+WarningsAsErrors: '*'
+HeaderFilterRegex: '.*/(include|tests)/.*'
+FormatStyle: file
